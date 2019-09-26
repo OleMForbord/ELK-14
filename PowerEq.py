@@ -31,7 +31,6 @@ def react_pow(busi, n, v, teta, g, b):  # n=number of buses
         if busj == busi:
             continue
         else:
-            print('it did really continue')
             q = q - v[busi-1] * v[busj-1] * uij(busi, busj, teta, g, b)
     return q
 
@@ -122,29 +121,29 @@ def jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b):
 
 def power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b):
     actualpower=np.append(Pactual,Qactual)
-    print(actualpower)
     estpower=np.empty(0)
     for pi in range(0,Pindex.size):
         estpower=np.append(estpower,act_pow(Pindex[pi],v.size,v,teta,g,b))
+    print('active power injection: ', estpower)
     for qi in range(0,Qindex.size):
         estpower=np.append(estpower,react_pow(Qindex[qi],v.size,v,teta,g,b))
-    print(estpower)
+    print('reactive power injection: ',estpower[:Pindex.size])
     return actualpower-estpower
 
-def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
+def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,error_size):
+    print('\nVoltage angles:', teta)
+    print('Voltage magnitudes: ', v)
     jacobiinv=np.linalg.inv(jacobi(Pindex,Qindex,tindex,vindex,v,teta,g,b))
-    deltapower= power_missmatch(Pactual,Qactual,Pindex,Qindex,vindex,v,teta,g,b)
-    correction=jacobiinv.dot(deltapower)
-    print('Jacobi-matrix:\n',jacobi(Pindex,Qindex,tindex,vindex,v,teta,g,b))
-    print('\nVoltage angles:')
+    missmatch= power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b)
+    correction=jacobiinv.dot(missmatch)
+    print('\nActive power missmatch: ',missmatch[:Pindex.size])
+    print('Reactive power missmatch: ', missmatch[Pindex.size:])
+    print('\nJacobi-matrix:\n',jacobi(Pindex,Qindex,tindex,vindex,v,teta,g,b))
+    print('\ncorrection: ',correction)
     for a in range(0,tindex.size):
         teta[a]=teta[a]+correction[a]
-        print('Bus nr',tindex[a],': Voltage angle =',teta[a] )
-    print('\nVoltage magnetudes:')
     for vm in range(0,vindex.size):
-        v[vm-1]=v[vm]+correction[tindex.size-1+vm]
-        print('Bus nr',vindex[vm],': Voltage magnitude =',v[vm])
-    #for i in correction:
-       # while i>0.5:
-        #    newtonrhapson(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b)
-    #return 0
+        v[vm]=v[vm]+correction[tindex.size+vm]
+    for i in range(0,3):
+        if(abs(correction[1])>error_size):
+            newtonrhapson(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b,error_size)

@@ -17,10 +17,8 @@ tindex=np.array([1,2])#list with bus number of buses with unknown angel
 Pactual=np.array([-1.0,-0.5])
 Qactual=np.array([-0.5,-0.5])
 
-print(jacobi(Pindex,Qindex,tindex,vindex,v,teta,g,b))
 
-print(power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b))
-#newtonrhapson(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b)
+newtonrhapson(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b,0.01)
 
 
 
