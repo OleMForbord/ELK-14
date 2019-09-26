@@ -118,7 +118,7 @@ def dqdv(busi, vindex, v, teta, g, b):
 
 
 def jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b):
-    jac = np.empty(shape=(Pindex.size+ Qindex.size, tindex.size + vindex.size))
+    jac = np.empty(shape=(Pindex.size + Qindex.size, tindex.size + vindex.size))
     for pi in range(0,Pindex.size):
         row = np.empty(0)
         row = np.append(row, dpdt(Pindex[pi], tindex, v, teta, g, b))
@@ -133,13 +133,14 @@ def jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b):
 
 def power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b):
     actualpower=np.append(Pactual,Qactual)
-    #print(actualpower)
+    print(actualpower)
     estpower=np.empty(0)
     for pi in range(0,Pindex.size):
         estpower=np.append(estpower,act_pow(Pindex[pi],v.size,v,teta,g,b))
+    print('active power injection: ', estpower)
     for qi in range(0,Qindex.size):
         estpower=np.append(estpower,react_pow(Qindex[qi],v.size,v,teta,g,b))
-    #print(estpower)
+    print('reactive power injection: ',estpower[:Pindex.size])
     return actualpower-estpower
 
 def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
