@@ -1,4 +1,5 @@
 from PowerEq import *
+from ContinousPF import *
 import numpy as np
 """teta = np.zeros(3) #creates an array with the initial angles
 #v = np.array([1.0, 1.0, 1.0]) #creates an array with the initial voltages
@@ -32,26 +33,23 @@ Pindex=np.array([1,2])#list with bus number of buses with known P
 Qindex=np.array([1,2])#list with bus number of buses with known Q
 vindex=np.array([1,2])#list with bus number of buses with unknown v
 tindex=np.array([1,2])#list with bus number of buses with unknown angel
-Pactual=np.array([-0.8,-0.4])
+Pactual=np.array([-1.0,-0.5])
 Qactual=np.array([-0.5,-0.5])
+alpha = np.array([0.1,0.2])
+beta = np.array([1,2])
 
 
 
 CONVERGENCE_LIMIT = 10**3
 counter = 0
 #flag = True
+print(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
+print(predictor(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
+print(correctorV(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
+print(correctorP(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
 
-while True:
 
-    if (newtonrhapson(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b) == 0):
-        break
-        #flag = False
+#voltageStabilityAccumulating(Pactual,Qactual,Pindex, Qindex, tindex, vindex, teta, v,  g, b)
+#voltageStabilityFlatStart(Pactual,Qactual,Pindex, Qindex, tindex, vindex, g, b)
 
-    Pactual = Pactual - [0.2 * 0.3, 0.2 * 0.7]
-    Qactual = Qactual - [0.2 * 0.3, 0.2 * 0.7]
-
-print("Divergence at Pactual: ", Pactual)
-plt.xlabel("Load power")
-plt.ylabel("Voltage")
-plt.show()
 

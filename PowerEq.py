@@ -133,16 +133,45 @@ def jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b):
 
 def power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b):
     actualpower=np.append(Pactual,Qactual)
-    #print(actualpower)
+
     estpower=np.empty(0)
     for pi in range(0,Pindex.size):
         estpower=np.append(estpower,act_pow(Pindex[pi],v.size,v,teta,g,b))
     print('active power injection: ', estpower)
     for qi in range(0,Qindex.size):
         estpower=np.append(estpower,react_pow(Qindex[qi],v.size,v,teta,g,b))
-    #print(estpower)
+
     print('reactive power injection: ',estpower[:Pindex.size])
     return actualpower-estpower
+
+def voltageStabilityFlatStart(Pactual,Qactual,Pindex, Qindex, tindex, vindex, g, b):
+    while True:
+        teta = np.array([0.0, 0.0, 0.0])  # creates an array with the initial angles
+        v = np.array([1.0, 1.0, 1.0])  # creates an array with the initial voltages
+        print("Teta is:", teta)
+        if (newtonrhapson(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b) == 0):
+            break
+        Pactual = Pactual - [0.2 * 0.3, 0.2 * 0.7]
+        # Qactual = Qactual - [0.2 * 0.3, 0.2 * 0.7]
+
+    print("Divergence at Pactual: ", Pactual)
+    plt.xlabel("Load power")
+    plt.ylabel("Voltage")
+    plt.show()
+
+def voltageStabilityAccumulating(Pactual,Qactual,Pindex, Qindex, tindex, vindex, teta, v,  g, b):
+    while True:
+        print("Teta is:", teta)
+        if (newtonrhapson(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b) == 0):
+            break
+            Pactual = Pactual - [0.2 * 0.3, 0.2 * 0.7]
+        # Qactual = Qactual - [0.2 * 0.3, 0.2 * 0.7]
+
+    print("Divergence at Pactual: ", Pactual)
+    plt.xlabel("Load power")
+    plt.ylabel("Voltage")
+    plt.show()
+
 
 def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
     print('\nVoltage angles:', teta)
@@ -153,23 +182,26 @@ def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
     jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
     correction = jacobiinv.dot(missmatch)
     print('\nActive power missmatch: ', missmatch[:Pindex.size])
-    print('Reactive power missmatch: ', missmatch[Pindex.size:])
+  #  print('Reactive power missmatch: ', missmatch[Pindex.size:])
     print('\nJacobi-matrix:\n', jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
-    print('\ncorrection: ', correction)
-    from Master import CONVERGENCE_LIMIT
+  #  print('\ncorrection: ', correction)
+    #from Master import CONVERGENCE_LIMIT
 
     while abs(correction[2]) > epsilonError:
-        if(it >= CONVERGENCE_LIMIT):
+        if(it >= 1000):#CONVERGENCE_LIMIT):
+            print("diverg")
             return 0
         for a in range(0, tindex.size):
             teta[a] = teta[a] + correction[a]
         for vm in range(0, vindex.size):
             v[vm] = v[vm] + correction[tindex.size - 1 + vm]
 
-        deltapower = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
+        missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
         jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
-        correction = jacobiinv.dot(deltapower)
+        correction = jacobiinv.dot(missmatch)
+        print('\nActive power missmatch: ', missmatch[:Pindex.size])
         it += 1
+        print('\nJacobi-matrix:\n', jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
     print("Number of iterations before convergence is: ", it)
     print('Bus nr', vindex[0], ': Voltage magnitude =', v[0])
     print('Bus nr ', vindex[1], ': Voltage magnitude =', v[1])
