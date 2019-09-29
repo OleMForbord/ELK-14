@@ -51,3 +51,31 @@ def correctorP(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
         else:
             corrP[i,width-1] = 1
     return corrP
+
+def predictor_vector(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
+    pred_inv = np.linalg.inv(predictor(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
+    missmatch=np.zeros(Pindex.size+Qindex.size)
+    missmatch=np.append(missmatch,[1])
+    predvector=pred_inv.dot(missmatch)
+    predvector=np.delete(predvector,-1)
+    return predvector
+
+def correctorV_vector(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
+    corrV_inv = np.linalg.inv(predictor(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
+    missmatch = power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b)
+    missmatch=np.append(missmatch,[0])
+    corrV_vector=corrV_inv.dot(missmatch)
+    corrV_vector=np.delete(corrV_vector,-1)
+    return corrV_vector
+
+def correctorP_vector(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
+    corrP_inv = np.linalg.inv(predictor(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
+    missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
+    missmatch = np.append(missmatch, [0])
+    corrP_vector = corrP_inv.dot(missmatch)
+    corrP_vector = np.delete(corrP_vector, -1)
+    return corrP_vector
+
+
+
+

@@ -137,26 +137,56 @@ def power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b):
     estpower=np.empty(0)
     for pi in range(0,Pindex.size):
         estpower=np.append(estpower,act_pow(Pindex[pi],v.size,v,teta,g,b))
-    print('active power injection: ', estpower)
     for qi in range(0,Qindex.size):
         estpower=np.append(estpower,react_pow(Qindex[qi],v.size,v,teta,g,b))
 
-    print('reactive power injection: ',estpower[:Pindex.size])
+    return actualpower-estpower
+
+def missmatch_print(Pactual,Qactual,Pindex,Qindex,v,teta,g,b):
+    actualpower=np.append(Pactual,Qactual)
+
+    estpower=np.empty(0)
+    for pi in range(0,Pindex.size):
+        estpower=np.append(estpower,act_pow(Pindex[pi],v.size,v,teta,g,b))
+    print('\nActive power injection: ', estpower)
+    for qi in range(0,Qindex.size):
+        estpower=np.append(estpower,react_pow(Qindex[qi],v.size,v,teta,g,b))
+    print('Reactive power injection: ',estpower[:Pindex.size])
+    missmatch=actualpower-estpower
+
+    print('\nActive power missmatch: ', missmatch[:Pindex.size])
+    print('Reactive power missmatch: ', missmatch[Pindex.size:])
     return actualpower-estpower
 
 def voltageStabilityFlatStart(Pactual,Qactual,Pindex, Qindex, tindex, vindex, g, b):
+    teta = np.array([0.0, 0.0, 0.0])  # creates an array with the initial angles
+    v = np.array([1.0, 1.0, 1.0])  # creates an array with the initial voltages
+    syst_load = abs(Pactual[0] + Pactual[1])
+    P_load = np.array([syst_load])
+
+    newtonrhapson(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b)
+    v1 = np.array(v[0])
+    v2 = np.array(v[1])
+
     while True:
         teta = np.array([0.0, 0.0, 0.0])  # creates an array with the initial angles
         v = np.array([1.0, 1.0, 1.0])  # creates an array with the initial voltages
-        print("Teta is:", teta)
         if (newtonrhapson(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b) == 0):
             break
         Pactual = Pactual - [0.2 * 0.3, 0.2 * 0.7]
         # Qactual = Qactual - [0.2 * 0.3, 0.2 * 0.7]
-
+        syst_load += abs(Pactual[0] + Pactual[1])
+        newtonrhapson(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b)
+        P_load = np.append(P_load, syst_load)
+        v1 = np.append(v1, v[0])
+        v2 = np.append(v2, v[1])
     print("Divergence at Pactual: ", Pactual)
+    print(v1, v2, P_load)
+
     plt.xlabel("Load power")
     plt.ylabel("Voltage")
+    plt.plot(P_load, v1)
+    plt.plot(P_load, v2)
     plt.show()
 
 def voltageStabilityAccumulating(Pactual,Qactual,Pindex, Qindex, tindex, vindex, teta, v,  g, b):
@@ -173,18 +203,16 @@ def voltageStabilityAccumulating(Pactual,Qactual,Pindex, Qindex, tindex, vindex,
     plt.show()
 
 
+
+
 def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
-    print('\nVoltage angles:', teta)
-    print('Voltage magnitudes: ', v)
+
     it = 1
     epsilonError = 0.001
     missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
     jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
     correction = jacobiinv.dot(missmatch)
-    print('\nActive power missmatch: ', missmatch[:Pindex.size])
-  #  print('Reactive power missmatch: ', missmatch[Pindex.size:])
-    print('\nJacobi-matrix:\n', jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
-  #  print('\ncorrection: ', correction)
+
     #from Master import CONVERGENCE_LIMIT
 
     while abs(correction[2]) > epsilonError:
@@ -194,15 +222,48 @@ def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
         for a in range(0, tindex.size):
             teta[a] = teta[a] + correction[a]
         for vm in range(0, vindex.size):
-            v[vm] = v[vm] + correction[tindex.size - 1 + vm]
+            v[vm] = v[vm] + correction[tindex.size + vm]
 
         missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
         jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
         correction = jacobiinv.dot(missmatch)
-        print('\nActive power missmatch: ', missmatch[:Pindex.size])
         it += 1
+    return 1
+
+def newtonrhapson_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
+
+    print('iteration number: 1')
+    print('\nVoltage angles:', teta)
+    print('Voltage magnitudes: ', v)
+    it = 1
+    epsilonError = 0.001
+    missmatch = missmatch_print(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
+    jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
+    correction = jacobiinv.dot(missmatch)
+
+    print('\nJacobi-matrix:\n', jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
+    print('\ncorrection: ', correction)
+    #from Master import CONVERGENCE_LIMIT
+
+    while abs(correction[2]) > epsilonError:
+        if(it >= 1000):#CONVERGENCE_LIMIT):
+            print("diverg")
+            return 0
+        for a in range(0, tindex.size):
+            teta[a] = teta[a] + correction[a]
+        for vm in range(0, vindex.size):
+            v[vm] = v[vm] + correction[tindex.size + vm]
+        it += 1
+        print('\niteration: ', it)
+        print('\nVoltage angles:', teta)
+        print('Voltage magnitudes: ', v)
+        missmatch = missmatch_print(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
+        jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
+        correction = jacobiinv.dot(missmatch)
+
         print('\nJacobi-matrix:\n', jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
-    print("Number of iterations before convergence is: ", it)
+        print('\ncorrection: ', correction)
+    print("\nNumber of iterations before convergence is: ", it)
     print('Bus nr', vindex[0], ': Voltage magnitude =', v[0])
     print('Bus nr ', vindex[1], ': Voltage magnitude =', v[1])
 
@@ -210,7 +271,3 @@ def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
 
 
     return 1
-    #for i in correction:
-       # while i>0.5:
-        #    newtonrhapson(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b)
-
