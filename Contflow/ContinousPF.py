@@ -1,4 +1,4 @@
-from PowerEq import *
+from Loadflow.PowerEq import *
 import math
 
 
@@ -75,6 +75,14 @@ def correctorP_vector(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g
     corrP_vector = corrP_inv.dot(missmatch)
     corrP_vector = np.delete(corrP_vector, -1)
     return corrP_vector
+
+def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
+    step=0.0786
+    newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
+    print(predictor(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha,beta))
+    for busi in vindex:
+        v[busi-1]+=
+
 
 
 
