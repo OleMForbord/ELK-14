@@ -19,7 +19,8 @@ vindex=np.array([1,2])#list with bus-numbers of the buses with unknown v
 tindex=np.array([1,2])#list with bus-numbers of the buses with unknown angel
 Pactual=np.array([-1.0,-0.5])
 Qactual=np.array([-0.5,-0.5])
-alpha = np.array([0.1,0.2])
-beta = np.array([1,2])
+alpha = np.array([0,0])
+beta = np.array([0.5,0.5])
 
-contflow_print(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b,alpha,beta)
+
+contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,1)
