@@ -2,6 +2,26 @@ from math import *
 import numpy as np
 import matplotlib.pyplot as plt
 
+def g_matrix(z):
+    g=np.zeros(shape=(z[0].size,z[0].size))
+    for i in range (0,z[0].size):
+        for j in range (0,z[0].size):
+            if j!=i:
+                g[i][j]=(1/z[i][j]).real
+        g[i][i]=np.sum(g[i])
+    return g
+def b_matrix(z):
+    b=np.zeros(shape=(z[0].size,z[0].size))
+    for i in range (0,z[0].size):
+        for j in range (0,z[0].size):
+            if j!=i:
+                b[i][j]=(1/z[i][j]).imag
+        b[i][i]=np.sum(b[i])
+    return b
+
+
+
+
 def tij(
     i, j, teta, g, b
 ):  # Creates the tij needed in the derivatives. i,j=bus nr i and j.teta=the angles g=conductance matrix, b=susceptance matrix
@@ -81,7 +101,7 @@ def dpdv(busi, vindex, v, teta, g, b):
     return row
 
 
-def dqdt(busi, tindex, vindex, v, teta, g, b):
+def dqdt(busi, tindex, v, teta, g, b):
     row = np.empty(0)
     for busj in tindex:
         if busj==busi:
@@ -125,7 +145,7 @@ def jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b):
         jac[pi] = row
     for qi in range(0,Qindex.size):
         row = np.empty(0)
-        row = np.append(row, dqdt(Qindex[qi], tindex, vindex, v, teta, g, b))
+        row = np.append(row, dqdt(Qindex[qi], tindex, v, teta, g, b))
         row = np.append(row, dqdv(Qindex[qi], vindex, v, teta, g, b))
         jac[Pindex.size + qi] = row
     return jac
@@ -171,7 +191,6 @@ def voltageStabilityFlatStart(Pactual,Qactual,Pindex, Qindex, tindex, vindex, g,
         # Qactual = Qactual - [0.2 * 0.3, 0.2 * 0.7]
         syst_load += 0.2
         print(syst_load)
-        print("kommer hit")
         P_load = np.append(P_load, syst_load)
         v1 = np.append(v1, v[0])
         v2 = np.append(v2, v[1])
@@ -204,6 +223,8 @@ def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
     missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
     jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
     correction = jacobiinv.dot(missmatch)
+    print('correction: ',correction)
+    print('teta: ',teta, 'correction[tindex.size: ',correction[:tindex.size])
 
     #from Master import CONVERGENCE_LIMIT
 
@@ -212,9 +233,9 @@ def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
             print("diverg")
             return 0
         for a in range(0, tindex.size):
-            teta[a] = teta[a] + correction[a]
+            teta[tindex[a]-1] += correction[a]
         for vm in range(0, vindex.size):
-            v[vm] = v[vm] + correction[tindex.size + vm]
+            v[vindex[vm]-1] += correction[tindex.size + vm]
 
         missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
         jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
@@ -244,9 +265,9 @@ def newtonrhapson_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta,
             print("diverg")
             return 0
         for a in range(0, tindex.size):
-            teta[a] = teta[a] + correction[a]
+            teta[tindex[a]-1] += correction[a]
         for vm in range(0, vindex.size):
-            v[vm] = v[vm] + correction[tindex.size + vm]
+            v[vindex[vm]-1] += correction[tindex.size + vm]
         it += 1
 
         missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)

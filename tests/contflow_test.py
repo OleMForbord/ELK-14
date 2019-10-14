@@ -1,8 +1,9 @@
-import numpy as np
+import sys
+sys.path.append(".")
 from Contflow.ContinousPF import *
-
-teta = np.array([0.0, 0.0, 0.0]) #creates an array with the initial angles
-v = np.array([1.0, 1.0, 1.0]) #creates an array with the initial voltages
+import numpy as np
+teta = np.array([0, 0, 0.0]) #creates an array with the initial angles
+v = np.array([1, 1, 1.0]) #creates an array with the initial voltages
 g12=(1/complex(0.05,0.2)).real
 g13=(1/complex(0.05,0.1)).real
 g23=(1/complex(0.05,0.15)).real
@@ -17,10 +18,10 @@ Pindex=np.array([1,2])#list with bus-numbers of the buses with known P
 Qindex=np.array([1,2])#list with bus-numbers of the buses with known Q
 vindex=np.array([1,2])#list with bus-numbers of the buses with unknown v
 tindex=np.array([1,2])#list with bus-numbers of the buses with unknown angel
-Pactual=np.array([-1.0,-0.5])
+Pactual=np.array([-1,-0.5])
 Qactual=np.array([-0.5,-0.5])
 alpha = np.array([0,0])
 beta = np.array([0.5,0.5])
 
-
-contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,1)
+#newtonrhapson_print(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b)
+contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,0.1)

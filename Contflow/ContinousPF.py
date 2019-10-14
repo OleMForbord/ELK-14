@@ -1,6 +1,10 @@
-from Loadflow.PowerEq import *
+import numpy as np
 import math
 import copy
+import sys
+sys.path.append(".")
+from Loadflow.PowerEq import *
+
 
 #Predictor_jac finds the jacobi with extension for the predicor-phase
 def predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
