@@ -23,7 +23,7 @@ Qactual=np.array([-0.5,-0.5])
 alpha = np.array([0.1,0.2])
 beta = np.array([1,2])
 #print_fdlf(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,z,)
-#print_standard(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
-print(heq_matrix(Pindex,Qindex,tindex,vindex,v,teta,g,b))
+#print(dcflow(Pactual,Qactual,Pindex, Qindex, tindex, v, teta, g, b,z))
+print(distfactor(Pindex,tindex,b,z,1,2))
 
 

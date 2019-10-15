@@ -1,8 +1,8 @@
 import Loadflow.PowerEq as pe
-import numpy
-from Decoupled.optionally import *
+import numpy as np
 
-def bm(Pindex,tindex,b):
+
+def h_matrix(Pindex,tindex,b):
     matrix= np.zeros(shape=(Pindex.size,tindex.size))
     for i in Pindex:
         row=np.zeros(tindex.size)
@@ -14,7 +14,30 @@ def bm(Pindex,tindex,b):
         matrix[i-1]=row
     return matrix
 
-def bmm(Qindex,vindex,z):
+def l_matrix(Qindex,vindex,b):
+    matrix= np.zeros(shape=(Qindex.size,vindex.size))
+    for i in Qindex:
+        row=np.zeros(vindex.size)
+        for j in vindex:
+            if(j!=i):
+                row[j-1]=b[i-1][j-1]
+            else:
+                row[j - 1] = -b[i - 1][j - 1]
+        matrix[i-1]=row
+    return matrix
+
+def heq_matrix(Pindex,tindex,z):
+    matrix= np.zeros(shape=(Pindex.size,tindex.size))
+    for i in Pindex:
+        for j in tindex:
+            if j!=i:
+                matrix[i-1][j-1] = -1/(z[i-1][j-1].imag)
+        for k in range(0, z[i-1].size):
+            if z[i-1][k] != 0:
+                matrix[i-1][i-1] += np.sum(1 / (z[i-1][k].imag))
+    return matrix
+
+def leq_matrix(Qindex,vindex,z):
     matrix= np.zeros(shape=(Qindex.size,vindex.size))
     for i in Qindex:
         for j in vindex:
@@ -31,21 +54,16 @@ def missmat_p(Pactual,Qactual,Pindex,Qindex,tindex,v,teta,g,b):
 def missmat_q(Pactual,Qactual,Pindex,Qindex,tindex,v,teta,g,b):
     return pe.power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b)[tindex.size:]
 
-def print_standard(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
+def print_standard(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,z):
     it = 1
     epsilonError = 0.001
-    heq_inv=np.linalg.inv(heq_matrix(Pindex,Qindex,tindex,vindex,v,teta,g,b))
-    leq_inv=np.linalg.inv(leq_matrix(Pindex,Qindex,tindex,vindex,v,teta,g,b))
-    correction_teta = heq_inv.dot(missmat_p(Pactual, Qactual, Pindex, Qindex, tindex, v, teta, g, b))
-    correction_v = leq_inv.dot(missmat_q(Pactual, Qactual, Pindex, Qindex, vindex, v, teta, g, b))
-    correction=np.append(correction_teta,correction_v)
     matrix=np.zeros(shape=(Pindex.size+Qindex.size,tindex.size+vindex.size))
-    matrix[0:Pindex.size-1,0:tindex.size]=correction_teta
-    matrix[Pindex.size:,tindex.size:] = correction_v
-    print(matrix)
+    matrix[:Pindex.size,0:tindex.size]=heq_matrix(Pindex,tindex,z)
+    matrix[Pindex.size:,tindex.size:] = leq_matrix(Qindex,vindex,z)
+
     matrix_inv=np.linalg.inv(matrix)
-    print('heq:\n',np.linalg.inv(heq_inv))
-    print('\nleq:\n',np.linalg.inv(leq_inv))
+    correction=matrix_inv.dot(pe.power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b))
+    print('standard decoupled matrix:\n',matrix)
     print('\nVoltage angles: ', teta)
     print('Voltage magnetudes: ', v)
 
@@ -58,13 +76,14 @@ def print_standard(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
             teta[tindex[a]-1] += correction[a]
         for vm in range(0, vindex.size):
             v[vindex[vm]-1] += correction[tindex.size+vm]
-
-        print('\nMagnitudes correction:',correction_v)
+        print('\niteraton: ', it)
+        print('\nAngle correction:', correction[Pindex.size:])
+        print('Voltage angles: ', teta)
+        print('\nMagnitudes correction:',correction[:Pindex.size])
         print('Voltage magnetudes: ', v)
 
-        print('\niteraton: ', it)
-        print('\nAngle correction:', correction_teta)
-        print('Voltage angles: ', teta)
+
+
 
         correction= matrix_inv.dot(pe.power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b))
 
@@ -145,3 +164,27 @@ def print_dual(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,z):
 def print_fdlf(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,z):
     if print_primal(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,z)==0:
         print_dual(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,z)
+
+def dcflow(Pactual,Qactual,Pindex, Qindex, tindex, v, teta, g, b,z):
+    print('initial angles:\n',teta)
+    b_matrix=heq_matrix(Pindex,tindex,z)
+    print('B-matrix:\n',b_matrix)
+    bmm_inv=np.linalg.inv(b_matrix)
+    correction=bmm_inv.dot(missmat_p(Pactual,Qactual,Pindex,Qindex,tindex,v,teta,g,b))
+    print('correction: ',correction)
+    for a in range(0, tindex.size):
+        teta[tindex[a] - 1] += correction[a]
+    print('Updated angles: ',teta)
+    pflow=np.zeros(shape=(teta.size,teta.size))
+    for i in range(0,teta.size):
+        for j in range(0,teta.size):
+            if z[i][j]!=0:
+                pflow[i][j]=(teta[i]-teta[j])/z[i][j].imag
+    return pflow
+
+def distfactor(Pindex,tindex,b,z,i,j):
+
+    heq=heq_matrix(Pindex,tindex,z)
+    heq_new = np.array([heq[i-1],heq[j-1]])
+    print(heq_new)
+    return np.linalg.inv(heq_new).dot([1/z[i-1][j-1].imag,-1/z[i-1][j-1].imag])
