@@ -72,6 +72,8 @@ def correctorV_phase(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g,
     it = 0
     epsilonError = 0.001
     correction = correctorV_vector(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,busi)
+    print(correction)
+    print(v)
     while np.any(abs(correction[:-1]) > epsilonError) == True:
         if (it >= 1000):  # CONVERGENCE_LIMIT):
             print("diverg")
@@ -80,8 +82,7 @@ def correctorV_phase(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g,
             teta[tindex[i] - 1] += correction[i]
         for j in range(0, vindex.size):
             v[vindex[j] - 1] += correction[tindex.size + j]
-        Pactual += step * beta
-        Qactual += step * alpha
+        print(v)
         correction = correctorV_vector(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,busi)
         it += 1
     return 1
@@ -115,20 +116,22 @@ def correctorS_vector(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g
 
 #CorrectorS_phase uses the correctorS_jac and the correctorS_vector to change the values of the angels and vpltages
 def correctorS_phase(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
-    teta_init=copy.copy(teta)
-    v_init=copy.copy(v)
-    #teta_init=np.zeros(teta.size)
-    #teta_init+=teta
-    #v_init=np.zeros(v.size)
-    #v_init+=v
+    #teta_init=copy.copy(teta)
+    #v_init=copy.copy(v)
+    teta_init=np.zeros(teta.size)
+    teta_init+=teta
+    v_init=np.zeros(v.size)
+    v_init+=v
     it = 0
     epsilonError = 0.001
     correction = correctorS_vector(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta)
     while np.any(abs(correction) > epsilonError) == True:
         if (it >= 1000):  # CONVERGENCE_LIMIT):
-            teta+=-teta+teta_init
-            v+=-v+v_init
+            teta+=teta_init-teta
+            v+=v_init-v
             print("diverg")
+            print('teta:',teta)
+            print('v',v)
             return 0
         for i in range(0, tindex.size):
             teta[tindex[i] - 1] += correction[i]
@@ -187,7 +190,8 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
 
             correction = correctorV_vector(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,worstV_bus)
             correctorV_phase(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,step,worstV_bus)
-
+            Pactual -= correction[-1] * beta
+            Qactual -= correction[-1] * alpha
             print('\nCorrector phase, constant voltage\n')
             print(correctorV_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,worstV_bus))
             print('Correction: ', correction)
@@ -195,10 +199,10 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
             print('Voltage mag: ', v)
             sensitivity = predictor_vector(Pindex, Qindex,predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
             if(check_sensitivity(sensitivity,tindex)==0):
-                teta += -teta + teta_init
-                v += -v +v_init
-                Pactual += -Pactual+Pactual_init
-                Qactual += -Qactual+Qactual_init
+               # teta += -teta + teta_init
+               # v += -v +v_init
+               # Pactual += -Pactual+Pactual_init
+                #Qactual += -Qactual+Qactual_init
 
                 print('\nPrevious valid solution:')
                 print('Voltage ang: ', teta)
