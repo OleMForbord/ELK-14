@@ -1,10 +1,14 @@
 import sys
 sys.path.append(".")
-from Decoupled.bmm import *
+from Decoupled.bm import *
+
 
 def distfactor(Pindex,tindex,z,i,j):
 
     heq=heq_matrix(Pindex,tindex,z)
-    heq_new = np.array([heq[i-1],heq[j-1]])
-    print(heq_new)
-    return np.linalg.inv(heq_new).dot([1/z[i-1][j-1].imag,-1/z[i-1][j-1].imag])
+    x_vec = np.zeros(heq[0].size)
+    x_vec[i-1] = 1/(z[i-1][j-1].imag)
+    x_vec[j-1] = -x_vec[i-1]
+
+    return np.linalg.inv(heq).dot(x_vec)
+
