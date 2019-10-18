@@ -22,8 +22,6 @@ def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b)
     missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
     jacobiinv = np.linalg.inv(jacobi(Pindex, Qindex, tindex, vindex, v, teta, g, b))
     correction = jacobiinv.dot(missmatch)
-    print('correction: ',correction)
-    print('teta: ',teta, 'correction[tindex.size: ',correction[:tindex.size])
 
     #from Master import CONVERGENCE_LIMIT
 

@@ -32,3 +32,5 @@ def qinj(v,teta,g,b):
     for busj in range(1,v.size+1):
         powerinj=np.append(powerinj,react_pow(busj,v.size,v,teta,g,b))
     return powerinj
+def netinj(v,teta,g,b):
+    return np.append(pinj(v,teta,g,b),qinj(v,teta,g,b))
