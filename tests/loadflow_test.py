@@ -7,6 +7,8 @@ from Loadflow.voltstab import *
 #newtonrhapson_print(Pactual,Qactual,Pindex,Qindex,tindex,vindex,v,teta,g,b)
 #voltageStabilityFlatStart(Pactual,Qactual,Pindex, Qindex, tindex, vindex, g, b)
 #voltageStabilityFlatStart(Pactual,Qactual,Pindex, Qindex, tindex, vindex, g, b)
-#print(netinj(v,teta,g,b))
+print('b-matrix: ',b)
+print('g-matrix: ',g)
+print(netinj(v,teta,g,b))
 
 

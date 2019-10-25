@@ -72,7 +72,7 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
             print('Correction: ', correction)
             print('\nVoltage ang: ', teta)
             print('Voltage mag: ', v)
-            
+
             sensitivity = predictor_vector(Pindex, Qindex,predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
             if(check_sensitivity(sensitivity,tindex)==0 or np.any(v<=0)):
                 teta += teta_init-teta

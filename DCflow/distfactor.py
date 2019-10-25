@@ -1,6 +1,6 @@
 import sys
 sys.path.append(".")
-from Decoupled.bmm import *
+from Decoupled.bm import *
 
 def distfactor(Pindex,tindex,z,i,j):
 
