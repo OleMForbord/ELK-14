@@ -20,6 +20,7 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
     v1 = np.array([v[0]])
     v2 = np.array([v[1]])
     sensitivity=predictor_vector(Pindex,Qindex,predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b,alpha,beta))
+    print(sensitivity)
     while (check_sensitivity(sensitivity,tindex)):
         Pactual_init=copy.copy(Pactual)
         Qactual_init=copy.copy(Qactual)
@@ -46,6 +47,8 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
         Qactual -= step * alpha
 
         if(correctorS_phase(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,alpha,beta)):
+
+
             correction=correctorS_vector(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b,alpha,beta)
             print('\nCorrector phase, constant load\n')
             print(correctorS_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b,alpha,beta))
@@ -53,30 +56,35 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
             print('\nVoltage ang: ', teta)
             print('Voltage mag: ', v)
         else:
-            worstV_bus=np.argmax(sensitivity[tindex.size:])+1
+            worstV_bus=vindex[np.argmax(abs(sensitivity[tindex.size:]))]
+            print('worst bus: ',worstV_bus)
 
             correction = correctorV_vector(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,worstV_bus)
             correctorV_phase(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,step,worstV_bus)
+            print('Pactual before corr:',Pactual)
+            print('Qactual before corr:', Qactual)
             Pactual -= correction[-1] * beta
             Qactual -= correction[-1] * alpha
+            print('Pactual before corr:', Pactual)
+            print('Qactual before corr:', Qactual)
             print('\nCorrector phase, constant voltage\n')
             print(correctorV_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta,worstV_bus))
             print('Correction: ', correction)
             print('\nVoltage ang: ', teta)
             print('Voltage mag: ', v)
-            sensitivity = predictor_vector(Pindex, Qindex,predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
-            if(check_sensitivity(sensitivity,tindex)==0):
-               # teta += -teta + teta_init
-               # v += -v +v_init
-               # Pactual += -Pactual+Pactual_init
-                #Qactual += -Qactual+Qactual_init
 
+            sensitivity = predictor_vector(Pindex, Qindex,predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
+            if(check_sensitivity(sensitivity,tindex)==0 or np.any(v<=0)):
+                teta += teta_init-teta
+                v += v_init-v-teta
+                Pactual += Pactual_init-Pactual
+                Qactual += Qactual_init-Qactual
+                v1=v1[:-1]
+                v2=v2[:-1]
+                P_load=P_load[:-1]
                 print('\nPrevious valid solution:')
                 print('Voltage ang: ', teta)
                 print('Voltage mag: ', v)
-                P_load = np.append(P_load, sum(abs(Pactual)))
-                v1 = np.append(v1, v[0])
-                v2 = np.append(v2, v[1])
                 break
 
         sensitivity = predictor_vector(Pindex, Qindex, predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b,alpha,beta))
@@ -88,9 +96,7 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
     plt.xlabel("Load power")
     plt.ylabel("Voltage")
     plt.plot(P_load, v1)
-    plt.plot(P_load, v2)
     plt.show()
-
 
 
 

@@ -13,7 +13,6 @@ def h_matrix(Pindex,tindex,b):
                 row[j - 1] = -b[i - 1][j - 1]
         matrix[i-1]=row
     return matrix
-
 def l_matrix(Qindex,vindex,b):
     matrix= np.zeros(shape=(Qindex.size,vindex.size))
     for i in Qindex:
@@ -25,3 +24,4 @@ def l_matrix(Qindex,vindex,b):
                 row[j - 1] = -b[i - 1][j - 1]
         matrix[i-1]=row
     return matrix
+

@@ -1,5 +1,6 @@
 import math
 import sys
+import copy
 sys.path.append(".")
 from Loadflow.voltstab import *
 
@@ -27,19 +28,16 @@ def correctorS_vector(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g
     missmatch = power_missmatch(Pactual, Qactual, Pindex, Qindex, v, teta, g, b)
     missmatch = np.append(missmatch, [0])
     corrP_vector = corrP_inv.dot(missmatch)
-    corrP_vector = np.delete(corrP_vector, -1)
+   # corrP_vector = np.delete(corrP_vector, -1)
     return corrP_vector
 
 #CorrectorS_phase uses the correctorS_jac and the correctorS_vector to change the values of the angels and vpltages
 def correctorS_phase(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta):
-    #teta_init=copy.copy(teta)
-    #v_init=copy.copy(v)
-    teta_init=np.zeros(teta.size)
-    teta_init+=teta
-    v_init=np.zeros(v.size)
-    v_init+=v
+    teta_init=copy.copy(teta)
+    v_init=copy.copy(v)
     it = 0
     epsilonError = 0.001
+
     correction = correctorS_vector(Pactual, Qactual, Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta)
     while np.any(abs(correction) > epsilonError) == True:
         if (it >= 1000):  # CONVERGENCE_LIMIT):
