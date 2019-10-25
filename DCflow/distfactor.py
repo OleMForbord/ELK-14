@@ -1,10 +1,7 @@
 import sys
 sys.path.append(".")
-from Decoupled.bm import *
-<<<<<<< HEAD
-=======
+from Decoupled.bmm import *
 
->>>>>>> 437774f9083faeb3c232c6b8b5ae35f465196aa8
 
 def distfactor(Pindex,tindex,z,i,j):
 

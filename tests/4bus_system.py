@@ -1,9 +1,11 @@
 import sys
 sys.path.append(".")
 from Loadflow.voltstab import *
+from DCflow.dcflow import *
+from Contingency.imml import *
 import numpy as np
 
-teta = np.array([0.0, 0.0, 0.0]) #creates an array with the initial angles
+teta = np.zeros(4) #creates an array with the initial angles
 v = np.array([1.0, 1.0, 1.0]) #creates an array with the initial voltages
 z12=(complex(0.0,0.2))
 z13=complex(0.0,0.1)
@@ -15,13 +17,12 @@ g=g_matrix(z) #creates a matrix with the conductanses
 b=b_matrix(z) #creates a matrix with the susceptances
 x=z.imag
 
-Pindex=np.array([1,2])#list with bus-numbers of the buses with known P
-Qindex=np.array([1,2])#list with bus-numbers of the buses with known Q
-vindex=np.array([1,2])#list with bus-numbers of the buses with unknown v
-tindex=np.array([1,2])#list with bus-numbers of the buses with unknown angel
-Pactual=np.array([-1.0,-0.5])
-Qactual=np.array([-0.5,-0.5])
+Pindex=np.array([1,2,3])#list with bus-numbers of the buses with known P
+vindex=np.array([1,2,3])#list with bus-numbers of the buses with unknown v
+tindex=np.array([1,2,3])#list with bus-numbers of the buses with unknown angel
+Pactual=np.array([-1.0,-0.5,-0.5])
 
-#print(z)
-#print(g)
-#print(b)
+print(z)
+teta[:-1]=angles_imml(2,3,-4,Pactual,Pindex,tindex,z)
+print(teta)
+print(line_flow(3,4,teta,z))
