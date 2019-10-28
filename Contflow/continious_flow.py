@@ -76,13 +76,15 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
             sensitivity = predictor_vector(Pindex, Qindex,predictor_jac(Pindex, Qindex, tindex, vindex, v, teta, g, b, alpha, beta))
             if(check_sensitivity(sensitivity,tindex)==0 or np.any(v<=0)):
                 teta += teta_init-teta
-                v += v_init-v-teta
+                v += v_init-v
                 Pactual += Pactual_init-Pactual
                 Qactual += Qactual_init-Qactual
                 v1=v1[:-1]
                 v2=v2[:-1]
                 P_load=P_load[:-1]
                 print('\nPrevious valid solution:')
+                print('\nActive power injections: ', pinj(v, teta, g, b))
+                print('Reactive power injection: ', qinj(v, teta, g, b))
                 print('Voltage ang: ', teta)
                 print('Voltage mag: ', v)
                 break
@@ -96,6 +98,7 @@ def contflow_print(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b
     plt.xlabel("Load power")
     plt.ylabel("Voltage")
     plt.plot(P_load, v1)
+    plt.plot(P_load, v2)
     plt.show()
 
 
