@@ -1,15 +1,27 @@
 import sys
 sys.path.append(".")
 from Decoupled.fdlf import *
+import numpy as np
 
-def line_flow(i,j,teta,z):
-    if z[i-1][j-1].imag!=0:
-        return(teta[i-1] - teta[j-1]) / z[i-1][j-1].imag
+def line_flow(i,j,teta,z, outage = False):
+    if (outage == False):
+        if z[i-1][j-1].imag!=0:
+            return(teta[i-1] - teta[j-1]) / z[i-1][j-1].imag
+        else:
+            print('This is not a valid line')
+            return 0
     else:
-        print('This is not a valid line')
         return 0
 
 
+def print_systemflow(teta, z,outage):
+    for i in range(0, teta.size):
+        for j in range(0, teta.size):
+            if z[i][j].imag != 0:
+                if outage:
+                    print('flow between bus', i+1, j+1, ': 0')
+                else:
+                    print('flow between bus',i+1,j+1,': ',line_flow(i+1,j+1,teta,z))
 
 def dcflow(Pactual,Pindex,tindex, v, teta, g, b,z):
     print('initial angles:\n',teta)
