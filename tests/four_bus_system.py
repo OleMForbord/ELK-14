@@ -22,7 +22,3 @@ vindex=np.array([1,2,3])#list with bus-numbers of the buses with unknown v
 tindex=np.array([1,2,3])#list with bus-numbers of the buses with unknown angel
 Pactual=np.array([-1.0,-0.5,-0.5])
 
-print(z)
-teta[:-1]=angles_imml(2,3,-4,Pactual,Pindex,tindex,z)
-print(teta)
-print(line_flow(3,4,teta,z))

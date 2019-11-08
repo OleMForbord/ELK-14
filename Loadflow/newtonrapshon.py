@@ -1,19 +1,10 @@
 import sys
 sys.path.append(".")
 from Loadflow.jacobi import *
+from Loadflow.missmat import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-def power_missmatch(Pactual,Qactual,Pindex,Qindex,v,teta,g,b):
-    actualpower=np.append(Pactual,Qactual)
-
-    estpower=np.empty(0)
-    for pi in range(0,Pindex.size):
-        estpower=np.append(estpower,act_pow(Pindex[pi],v.size,v,teta,g,b))
-    for qi in range(0,Qindex.size):
-        estpower=np.append(estpower,react_pow(Qindex[qi],v.size,v,teta,g,b))
-
-    return actualpower-estpower
 
 def newtonrhapson(Pactual,Qactual,Pindex, Qindex, tindex, vindex, v, teta, g, b):
 
