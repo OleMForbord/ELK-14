@@ -16,9 +16,3 @@ z=np.array([[0,z12,z13,inf],[z12,0,z23,inf],[z13,z23,0,z34],[inf,inf,z34,0]])
 g=g_matrix(z) #creates a matrix with the conductanses
 b=b_matrix(z) #creates a matrix with the susceptances
 x=z.imag
-
-Pindex=np.array([1,2,3])#list with bus-numbers of the buses with known P
-vindex=np.array([1,2,3])#list with bus-numbers of the buses with unknown v
-tindex=np.array([1,2,3])#list with bus-numbers of the buses with unknown angel
-Pactual=np.array([-1.0,-0.5,-0.5])
-slackbusnr=4
