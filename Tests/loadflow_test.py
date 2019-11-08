@@ -1,6 +1,6 @@
 import sys
 sys.path.append(".")
-from tests.basecase import *
+from Cases.basecase import *
 from Loadflow.voltstab import *
 import cProfile
 

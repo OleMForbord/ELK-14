@@ -1,6 +1,7 @@
-from tests.four_bus_system import *
-from DCflow.dcflow import *
+from Cases.four_bus_system import *
 from Contingency.imml import *
+from DCflow.distfactor import *
+from DCflow.dcflow import *
 #basecase
 print('basecase: ')
 pflow=dcflow(Pactual,Pindex, tindex, v, teta, g, b,z)
